@@ -107,6 +107,14 @@
                         {:status 200
                          :body {:task (c/create-todo user_id task)}})}}]
 
+    ["/update-todo"
+     {:post {:summary "Update existing todo task"
+             :parameters {:body {:id s/Int :task s/Str}}
+             :responses {200 {:body {:task s/Str}}}
+             :handler (fn [{{{:keys [user_id task]} :body} :parameters}]
+                        {:status 200
+                         :body {:task (c/update-todo user_id task)}})}}]
+
     ["/toggle-todo-status"
      {:post {:summary "Toggle done status of todo"
              :parameters {:body {:id s/Int}}

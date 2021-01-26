@@ -44,8 +44,8 @@
   (db/get-todos {:user_id user_id}))
 
 ;; function to update todo
-(defn update-todo [id]
-  (let [{:keys [task]} (db/update-todo {:id id})]
+(defn update-todo [id task]
+  (let [{:keys [task]} (db/update-todo {:id id :task task})]
     {:task task}))
 
 ;; function to toggle the status of todo
@@ -54,3 +54,10 @@
     {:task task}))
 
 ;; function to generate report (CSV file of todos)
+(defn generate-report [user_id]
+  (db/generate-report {:user_id user_id})
+  (db/add-report {:user_id user_id}))
+
+;; function to get all reports generated for a given user id
+(defn get-reports [user_id]
+  (db/get-reports {:user_id user_id}))

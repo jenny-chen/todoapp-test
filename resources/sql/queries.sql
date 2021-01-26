@@ -71,7 +71,20 @@ WHERE id = :id;
 
 ---------- REPORTS MANAGEMENT
 
+-- :name generate-report :! :n
+-- :doc generate csv file of all todos associated with user
+COPY (SELECT * FROM todos WHERE user_id = :user_id)
+TO STDOUT (DELIMITER ',');
+
+-- :name add-report :! :n
+-- :doc add report to database
+INSERT INTO reports
+(user_id, time_created)
+VALUES (:user_id, NOW())
+RETURNING *;
+
 -- :name get-reports :? :*
 -- :doc get all reports associated with a user
 SELECT * FROM reports
 WHERE user_id = :user_id;
+
