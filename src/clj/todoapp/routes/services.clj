@@ -84,43 +84,69 @@
                         {:status 200
                          :body {:strong (c/strong-password? password)}})}}]
 
-    ["/create-user"
-     {:post {:summary "Create a new user"
-             :parameters {:body {:email s/Str :username s/Str :password s/Str}}
-             :responses {200 {:body {:user_id s/Int}}}
-             :handler (fn [{{{:keys [email username password]} :body} :parameters}]
-                        {:status 200
-                         :body (c/create-user email username password)})}}]
-    ["/user-exists"
-     {:post {:summary "Check if user exists, login if exists"
-             :parameters {:body {:username s/Str :password s/Str}}
-             :responses {200 {:body {:user_id (s/maybe s/Int)}}}
-             :handler (fn [{{{:keys [username password]} :body} :parameters}]
-                        {:status 200
-                         :body {:user-id (:id (c/get-user username password))}})}}]
+    ["/user"
+      ["/"
+       {:post {:summary "Create a new user"
+               :parameters {:body {:email s/Str :username s/Str :password s/Str}}
+               :responses {200 {:body {:user_id s/Int}}}
+               :handler (fn [{{{:keys [email username password]} :body} :parameters}]
+                          {:status 200
+                           :body (c/create-user email username password)})}
+        :put {:summary "Update an existing user"
+              :parameters {200 {:body {:user_id s/Int}}}
+              :handler (fn [{{{:keys [id email username password]} :body} :parameters}]
+                         {:status 200
+                          :body (c/update-user id email username password)})}
+        :get {:summary "Get user details"
+              :parameters {200 {:body {:email s/Str :username s/Str :password s/Str}}}
+              :handler (fn [{{{:keys [id]} :body} :parameters}]
+                         {:status 200
+                          :body (c/get-user-by-id id)})}}]
+      ["/exists"
+       {:get {:summary "Check if user exists"
+               :parameters {:query {:username s/Str :password s/Str}}
+               :responses {200 {:body {:user_id (s/maybe s/Int)}}}
+               :handler (fn [{{{:keys [username password]} :query} :parameters}]
+                          {:status 200
+                           :body {:user_id (:id (c/get-user username password))}})}}]
 
-    ["/create-todo"
-     {:post {:summary "Create todo task associated with the given user-id"
-             :parameters {:body {:user_id s/Int :task s/Str}}
-             :responses {200 {:body {:task s/Str}}}
-             :handler (fn [{{{:keys [user_id task]} :body} :parameters}]
-                        {:status 200
-                         :body {:task (c/create-todo user_id task)}})}}]
+      ;; todos
 
-    ["/update-todo"
-     {:post {:summary "Update existing todo task"
-             :parameters {:body {:id s/Int :task s/Str}}
-             :responses {200 {:body {:task s/Str}}}
-             :handler (fn [{{{:keys [user_id task]} :body} :parameters}]
-                        {:status 200
-                         :body {:task (c/update-todo user_id task)}})}}]
+      ["/:user_id/todo/:task"
+       {:post {:summary "Create todo task associated with the given user-id"
+               :parameters {:path {:user_id s/Int :task s/Str}}
+               :responses {200 {:body {:task s/Str}}}
+               :handler (fn [{{{:keys [user_id task]} :path} :parameters}]
+                          {:status 200
+                           :body {:task (c/create-todo user_id task)}})}
 
-    ["/toggle-todo-status"
-     {:post {:summary "Toggle done status of todo"
-             :parameters {:body {:id s/Int}}
-             :responses {200 {:body {:task s/Str}}}
-             :handler (fn [{{{:keys [id]} :body} :parameters}]
-                        {:status 200
-                         :body {:task (c/toggle-todo-status id)}})}}]
+        :put {:summary "Update existing todo task"
+               :parameters {:path {:user_id s/Int :task s/Str}}
+               :responses {200 {:body {:task s/Str}}}
+               :handler (fn [{{{:keys [user_id task]} :path} :parameters}]
+                          {:status 200
+                           :body {:task (c/update-todo user_id task)}})}}]
 
-    ])
+      ["/:user_id/toggle-todo-status"
+       {:post {:summary "Toggle done status of todo"
+               :parameters {:path {:user_id s/Int}}
+               :responses {200 {:body {:task s/Str}}}
+               :handler (fn [{{{:keys [user_id]} :path} :parameters}]
+                          {:status 200
+                           :body {:task (c/toggle-todo-status user_id)}})}}]
+      ;; reports
+      ["/:user_id/report"
+       {:post {:summary "Generate csv of todos associated with user-id"
+               :parameters {:path {:user_id s/Int}}
+               :responses {200 {:body {:task s/Str}}}
+               :handler (fn [{{{:keys [user_id]} :path} :parameters}]
+                          {:status 200
+                           :body {:task (c/generate-report user_id)}})}
+        :get {:summary "Get all reports generated for the user"
+              :parameters {:path {:user_id s/Int}}
+              :responses {200 {:body {:task s/Str}}}
+              :handler (fn [{{{:keys [user_id]} :path} :parameters}]
+                         {:status 200
+                          :body {:task (c/get-reports user_id)}})}}]
+    ]
+])

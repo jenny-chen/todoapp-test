@@ -1,5 +1,7 @@
 (ns todoapp.controllers
-  (:require [todoapp.db.core :as db]))
+  (:require [todoapp.db.core :as db]
+            [clojure.data.csv :as csv]
+            [clojure.java.io :as io]))
 
 ;; function for email availability 
 (defn email-available? [email]
@@ -29,10 +31,19 @@
   (let [{:keys [id]} (db/create-user! {:email email :username username :password password})]
     {:user_id id}))
 
+;; function to update user details
+(defn update-user [user_id, email, username, password]
+  (let [{:keys [id]} (db/update-user! {:id user_id :username username :password password})]
+    {:user_id id}))
 
 ;; function to check if user exists
 (defn get-user [username password]
   (db/get-user {:username username :password password}))
+
+;; function to get user details using id
+(defn get-user-by-id [user_id]
+  (let [{:keys [email username password]} (db/get-user-by-id user_id)]
+    {:email email :username username :password password}))
 
 ;; function to add todo
 (defn create-todo [user_id task]
@@ -55,7 +66,8 @@
 
 ;; function to generate report (CSV file of todos)
 (defn generate-report [user_id]
-  (db/generate-report {:user_id user_id})
+  (with-open [writer (io/writer (str user_id "report.csv"))]
+    (csv/write-csv writer (db/get-todos {:user_id user_id})))
   (db/add-report {:user_id user_id}))
 
 ;; function to get all reports generated for a given user id

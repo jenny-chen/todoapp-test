@@ -25,11 +25,12 @@ SELECT email FROM users;
 -- :doc retrieves all usernames
 SELECT username FROM users;
 
--- :name update-user! :! :n
+-- :name update-user! :! :*
 -- :doc updates an existing user record
 UPDATE users
 SET email = :email, username = :username, password = :password
 WHERE id = :id
+RETURNING *;
 
 -- :name delete-user! :! :n
 -- :doc deletes a user record given the id
